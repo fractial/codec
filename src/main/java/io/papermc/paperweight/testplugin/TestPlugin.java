@@ -1,75 +1,109 @@
 package io.papermc.paperweight.testplugin;
 
-import com.destroystokyo.paper.brigadier.BukkitBrigadierCommandSource;
-import com.destroystokyo.paper.event.brigadier.CommandRegisteredEvent;
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import java.util.Collection;
-import java.util.function.Consumer;
-import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.brigadier.CommandDispatcher;
 
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.BLUE;
-import static net.minecraft.commands.Commands.argument;
-import static net.minecraft.commands.Commands.literal;
-import static net.minecraft.commands.arguments.EntityArgument.players;
+import io.papermc.paperweight.testplugin.commands.CastCommand;
+import io.papermc.paperweight.testplugin.serialization.ItemStackSerializer;
+import io.papermc.paperweight.testplugin.serialization.RecipeSerializer;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NonNull;
+
+import java.io.File;
+import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @DefaultQualifier(NonNull.class)
-public final class TestPlugin extends JavaPlugin implements Listener {
+public final class TestPlugin extends JavaPlugin {
+  public static Map<ResourceLocation, ItemStack> ITEMS = new HashMap<>();
+
   @Override
   public void onEnable() {
-    this.getServer().getPluginManager().registerEvents(this, this);
+    MinecraftServer minecraftServer = ((CraftServer) getServer()).getServer();
+    CommandDispatcher<CommandSourceStack> dispatcher = minecraftServer.getCommands().getDispatcher();
+    CastCommand.register(dispatcher);
 
-    this.registerPluginBrigadierCommand(
-      "paperweight",
-      literal -> literal.requires(stack -> stack.getBukkitSender().hasPermission("paperweight"))
-        .then(literal("hello")
-          .executes(ctx -> {
-            ctx.getSource().getBukkitSender().sendMessage(text("Hello!", BLUE));
-            return Command.SINGLE_SUCCESS;
-          }))
-        .then(argument("players", players())
-          .executes(ctx -> {
-            final Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "players");
-            for (final ServerPlayer player : players) {
-              player.sendSystemMessage(
-                Component.literal("Hello from Paperweight test plugin!")
-                  .withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN)
-                  .withStyle(style -> style.withClickEvent(new ClickEvent.RunCommand("/paperweight @a")))
-              );
-            }
-            return players.size();
-          }))
-    );
-  }
+    this.getServer().addRecipe(((ShapedRecipe) RecipeSerializer.deserialize(JsonParser.parseString("""
+      {
+        "type": "minecraft:crafting_shaped",
+        "category": "misc",
+        "group": "boat",
+        "key": {
+          "#": "minecraft:dirt"
+        },
+        "pattern": [
+          "# #",
+          "###"
+        ],
+        "result": {
+          "components": {
+            "minecraft:container": [
+              {
+                "slot": 0,
+                "item": {
+                  "id": "minecraft:acacia_trapdoor"
+                }
+              }
+            ]
+          },
+          "replace": "hi",
+          "count": 1,
+          "id": "minecraft:acacia_boat"
+        }
+      }
+      """)).toBukkitRecipe(NamespacedKey.fromString("test:test"))));
 
-  private PluginBrigadierCommand registerPluginBrigadierCommand(final String label, final Consumer<LiteralArgumentBuilder<CommandSourceStack>> command) {
-    final PluginBrigadierCommand pluginBrigadierCommand = new PluginBrigadierCommand(this, label, command);
-    this.getServer().getCommandMap().register(this.getName(), pluginBrigadierCommand);
-    ((CraftServer) this.getServer()).syncCommands();
-    return pluginBrigadierCommand;
-  }
+    File dataFolder = this.getDataFolder();
+    if (!dataFolder.exists()) dataFolder.mkdirs();
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  @EventHandler
-  public void onCommandRegistered(final CommandRegisteredEvent<BukkitBrigadierCommandSource> event) {
-    if (!(event.getCommand() instanceof PluginBrigadierCommand pluginBrigadierCommand)) {
-      return;
+    File[] namespaceFolders = dataFolder.listFiles(File::isDirectory);
+    if (namespaceFolders == null) return;
+
+    for (File namespaceFolder : namespaceFolders) {
+      File itemsFolder = new File(namespaceFolder, "items");
+      if (!itemsFolder.exists() || !itemsFolder.isDirectory()) continue;
+
+      String namespace = namespaceFolder.getName();
+
+      File[] itemFiles = itemsFolder.listFiles((dir, name) -> name.endsWith(".json"));
+      if (itemFiles == null) continue;
+
+      for (File itemFile : itemFiles) {
+        String path = itemFile.getName().replace(".json", "");
+        ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(namespace, path);
+
+        try (FileReader reader = new FileReader(itemFile)) {
+          JsonElement json = JsonParser.parseReader(reader);
+          ItemStack itemStack = ItemStackSerializer.deserialize(json);
+
+          try {
+            Item item = itemStack.getItem();
+            ItemStack itemStack1 = new ItemStack(item);
+            this.getLogger().info(Objects.requireNonNull(itemStack1.get(DataComponents.AXOLOTL_VARIANT)).toString());
+          } catch (Exception exception) {
+            this.getLogger().severe(exception.toString());
+          }
+
+          ITEMS.put(resourceLocation, itemStack);
+
+          this.getLogger().info("Loaded item: '" + resourceLocation + "'");
+        } catch (Exception exception) {
+          this.getLogger().severe("Failed to load item: '" + resourceLocation + "'");
+        }
+      }
     }
-    final LiteralArgumentBuilder<CommandSourceStack> node = literal(event.getCommandLabel());
-    pluginBrigadierCommand.command().accept(node);
-    event.setLiteral((LiteralCommandNode) node.build());
   }
 }

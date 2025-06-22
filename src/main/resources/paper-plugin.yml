@@ -1,0 +1,4 @@
+name: item
+version: '1.0.0'
+main: io.papermc.paperweight.testplugin.TestPlugin
+api-version: '1.21'
