@@ -54,10 +54,6 @@ public class OverrideRecipe {
 
         JsonObject overrideKey = jsonObject.getAsJsonObject("override_key");
 
-        String key = overrideKey.has("override_key") && !overrideKey.get("override_key").isJsonNull()
-          ? overrideKey.get("override_key").getAsString()
-          : null;
-
         JsonArray patternJsonArray = jsonObject.getAsJsonArray("pattern");
         Gson gson = new Gson();
 
@@ -89,17 +85,25 @@ public class OverrideRecipe {
 
           Character newChar = overrideChoiceMap.get(oldChar);
 
-          if (newChar != null) {
+          if (newChar == null) continue;
+
+          if (overrideKey.has(newChar.toString())) {
+            TestPlugin.getInstance().getLogger().info("OVERRIDE: " + newChar);
+
+            String key = overrideKey.has(newChar.toString()) && !overrideKey.get(newChar.toString()).isJsonNull()
+              ? overrideKey.get(newChar.toString()).getAsString()
+              : null;
+
+            ItemStack itemStack = ItemRegistry.ITEMS.get(ResourceLocation.parse(key)).getBukkitStack();
+
+
+            shapedRecipe1.setIngredient(newChar, itemStack);
+
+          } else {
+            
             shapedRecipe1.setIngredient(newChar, choice);
           }
         }
-      }
-
-      Map<Character, RecipeChoice> choiceMap1 = shapedRecipe1.getChoiceMap();
-
-      // DEBUG: `Test choiceMap`
-      for (Map.Entry<Character, RecipeChoice> entry : choiceMap1.entrySet()) {
-        TestPlugin.getInstance().getLogger().info("Test: " + entry.getKey().toString() + " " + entry.getValue().toString());
       }
 
       return shapedRecipe1;
