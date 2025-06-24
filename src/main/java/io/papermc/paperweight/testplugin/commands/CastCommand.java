@@ -15,6 +15,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paperweight.testplugin.TestPlugin;
+import io.papermc.paperweight.testplugin.registry.ItemRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -54,7 +55,7 @@ public class CastCommand {
       // - all items where path starts with rawInput
     }
 
-    for (ResourceLocation id : TestPlugin.ITEMS.keySet()) {
+    for (ResourceLocation id : ItemRegistry.ITEMS.keySet()) {
       String fullId = id.toString().toLowerCase();
       String namespace = id.getNamespace().toLowerCase();
       String path = id.getPath().toLowerCase();
@@ -85,7 +86,7 @@ public class CastCommand {
   }
 
   private static int giveItem(CommandSourceStack source, ResourceLocation item, Collection<ServerPlayer> targets, int count) throws CommandSyntaxException {
-    ItemStack itemStack2 = TestPlugin.ITEMS.get(item);
+    ItemStack itemStack2 = ItemRegistry.ITEMS.get(item);
     ItemStack itemStack = createItemStack(itemStack2, 1, false);
     Component displayName = itemStack.getDisplayName();
     int maxStackSize = itemStack.getMaxStackSize();
