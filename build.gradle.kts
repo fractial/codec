@@ -29,6 +29,7 @@ dependencies {
   paperweight.paperDevBundle("1.21.5-R0.1-SNAPSHOT")
   // paperweight.foliaDevBundle("1.21.5-R0.1-SNAPSHOT")
   // paperweight.devBundle("com.example.paperfork", "1.21.5-R0.1-SNAPSHOT")
+  implementation("org.spongepowered:mixin:0.8.5")
 }
 
 tasks {

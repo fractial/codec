@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.papermc.paperweight.testplugin.TestPlugin;
 import io.papermc.paperweight.testplugin.serialization.ItemStackSerializer;
+import io.papermc.paperweight.testplugin.serialization.Serializer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,7 +19,7 @@ public class ItemRegistry {
   public static Map<ResourceLocation, ItemStack> ITEMS = new HashMap<>();
 
   public static void register(ResourceLocation resourceLocation, JsonElement json) {
-    ItemStack itemStack = ItemStackSerializer.deserialize(json);
+    ItemStack itemStack = Serializer.deserialize(json, ItemStack.class);
 
     TestPlugin.getInstance().getLogger().info("Added Item: " + resourceLocation);
 

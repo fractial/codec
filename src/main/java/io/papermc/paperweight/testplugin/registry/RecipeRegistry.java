@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import io.papermc.paperweight.testplugin.TestPlugin;
 import io.papermc.paperweight.testplugin.recipe.OverrideRecipe;
 import io.papermc.paperweight.testplugin.serialization.RecipeSerializer;
+import io.papermc.paperweight.testplugin.serialization.Serializer;
 import net.minecraft.resources.ResourceLocation;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -25,7 +26,7 @@ public class RecipeRegistry {
   public static void register(ResourceLocation resourceLocation, JsonElement json) {
     Server server = TestPlugin.getInstance().getServer();
     NamespacedKey namespacedKey = NamespacedKey.fromString(resourceLocation.toString());
-    Recipe recipe = RecipeSerializer.deserialize(json).toBukkitRecipe(namespacedKey);
+    Recipe recipe = Serializer.deserialize(json, net.minecraft.world.item.crafting.Recipe.class).toBukkitRecipe(namespacedKey);
 
     if (recipe instanceof ShapedRecipe shapedRecipe) {
       ShapedRecipe shapedRecipe1 = OverrideRecipe.ShapedRecipe.create(shapedRecipe, json);
