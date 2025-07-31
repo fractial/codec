@@ -7,7 +7,7 @@ plugins {
   id("xyz.jpenilla.resource-factory-bukkit-convention") version "1.3.0" // Generates plugin.yml based on the Gradle config
 }
 
-group = "io.papermc.paperweight"
+group = "com.fractial"
 version = "1.0.0-SNAPSHOT"
 description = "Test plugin for paperweight-userdev"
 
@@ -26,9 +26,10 @@ tasks.assemble {
  */
 
 dependencies {
-  paperweight.paperDevBundle("1.21.8-R0.1-SNAPSHOT")
-  // paperweight.foliaDevBundle("1.21.8-R0.1-SNAPSHOT")
-  // paperweight.devBundle("com.example.paperfork", "1.21.8-R0.1-SNAPSHOT")
+  paperweight.paperDevBundle("1.21.5-R0.1-SNAPSHOT")
+  // paperweight.foliaDevBundle("1.21.5-R0.1-SNAPSHOT")
+  // paperweight.devBundle("com.example.paperfork", "1.21.5-R0.1-SNAPSHOT")
+  // implementation("org.spongepowered:mixin:0.8.5")
 }
 
 tasks {
@@ -54,8 +55,8 @@ tasks {
 // Configure plugin.yml generation
 // - name, version, and description are inherited from the Gradle project.
 bukkitPluginYaml {
-  main = "io.papermc.paperweight.testplugin.TestPlugin"
+  main = "com.fractial.codec.CodecPlugin"
   load = BukkitPluginYaml.PluginLoadOrder.STARTUP
-  authors.add("Author")
-  apiVersion = "1.21.8"
+  authors.add("Fractial")
+  apiVersion = "1.21.5"
 }
