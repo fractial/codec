@@ -17,7 +17,7 @@ public class TemplateItemStack {
 
   public TemplateItemStack(ResourceLocation template, Holder<Item> item, int count, DataComponentPatch components) {
     this.template = template;
-    this.item = (Item) item;
+    this.item = item.value();
     this.count = count;
     this.components = components;
   }

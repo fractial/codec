@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.ItemStack;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,18 +32,18 @@ public class CodecResourceManager {
       }
     }
 
-//    Map<ResourceLocation, Resource> resources1 = manager.listResources("extend", resourceLocation -> resourceLocation.getPath().endsWith(".json"));
-//    for (Map.Entry<ResourceLocation, Resource> entry : resources1.entrySet()) {
-//      String namespace = entry.getKey().getNamespace().toLowerCase(Locale.ROOT);
-//      String path = entry.getKey().getPath().toLowerCase(Locale.ROOT).replace(".json", "");
-//      ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
-//      try {
-//        JsonElement json = JsonParser.parseReader(new InputStreamReader(resources1.get(location).open()));
-//        ItemStack stack = Serializer.deserialize(json, TemplateItemStack.class).asItemStack();
-//        CodecItems.ITEM.put(location, stack);
-//      } catch (ReflectiveOperationException | IOException e) {
-//        throw new RuntimeException(e);
-//      }
-//    }
+    Map<ResourceLocation, Resource> resources1 = manager.listResources("extend", resourceLocation -> resourceLocation.getPath().endsWith(".json"));
+    for (Map.Entry<ResourceLocation, Resource> entry : resources1.entrySet()) {
+      String namespace = entry.getKey().getNamespace().toLowerCase(Locale.ROOT);
+      String path = entry.getKey().getPath().toLowerCase(Locale.ROOT).replace(".json", "");
+      ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
+      try {
+        JsonElement json = JsonParser.parseReader(new InputStreamReader(entry.getValue().open()));
+        ItemStack stack = Serializer.deserialize(json, TemplateItemStack.class).asItemStack();
+        CodecItems.ITEM.put(location, stack);
+      } catch (ReflectiveOperationException | IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }
