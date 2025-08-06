@@ -34,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 public class CastCommand {
   private static final SuggestionProvider<CommandSourceStack> SUGGESTION = CastCommand::listSuggestions;
 
+  // TODO: Optimize `listSuggestions`
   private static CompletableFuture<Suggestions> listSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
     String rawInput = builder.getInput().substring(builder.getStart());
     String lowerInput = rawInput.toLowerCase(Locale.ROOT);

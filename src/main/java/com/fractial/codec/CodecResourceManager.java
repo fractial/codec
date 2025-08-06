@@ -3,6 +3,7 @@ package com.fractial.codec;
 import com.fractial.codec.item.CodecItems;
 import com.fractial.codec.item.TemplateItemStack;
 import com.fractial.codec.serialization.Serializer;
+import com.fractial.codec.suggestion.CodecSuggestion;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
@@ -18,6 +19,11 @@ import java.util.Map;
 public class CodecResourceManager {
   public static void reload(ResourceManager manager) {
     CodecItems.ITEM.clear();
+
+    // TODO: Implement & remove placeholder for emoji
+    CodecSuggestion.EMOJI.clear();
+    CodecSuggestion.EMOJI.put(":gg:", "Good Game");
+    CodecSuggestion.EMOJI.put(":hw:", "Hello, World!");
 
     Map<ResourceLocation, Resource> resources = manager.listResources("item", resourceLocation -> resourceLocation.getPath().endsWith(".json"));
     for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
